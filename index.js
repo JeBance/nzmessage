@@ -31,6 +31,7 @@ class nzmessage {
 			console.log('\x1b[1m%s\x1b[0m', 'Message removed:', keyID);
 			await this.DB.delete('messages', keyID);
 			delete this.messages[keyID];
+			await this.DB.write(null, 'messages.json', JSON.stringify(this.messages));
 		} catch(e) {
 			console.log(e);
 		}
