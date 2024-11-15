@@ -36,6 +36,23 @@ class nzmessage {
 		}
 	}
 
+	async getMessage(keyID) {
+		try {
+			if (keyID && this.messages[keyID]) {
+				let message = {
+					hash: keyID,
+					timestamp: this.messages[keyID],
+					message: await this.DB.read('messages', keyID)
+				};
+				return message;
+			} else {
+				return false;
+			}
+		} catch(e) {
+			return false;
+		}
+	}
+
 }
 
 module.exports = nzmessage;
