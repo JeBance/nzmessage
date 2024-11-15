@@ -17,7 +17,7 @@ class nzmessage {
 
 	async add(message = { hash: 'somehash', timestamp: '1731683656118', message: 'PGP message' } ) {
 		try {
-			this.messages[message.hash] = timestamp;
+			this.messages[message.hash] = message.timestamp;
 			await this.DB.write('messages', message.hash, message.message);
 			await this.DB.write(null, 'messages.json', JSON.stringify(this.messages));
 			console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash + ':', message.timestamp);
