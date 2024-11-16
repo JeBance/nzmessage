@@ -1,3 +1,6 @@
+const { doRequest,
+		getResponse } = require('nzfunc');
+
 class nzmessage {
 	CONFIG;
 	DB;
@@ -51,6 +54,52 @@ class nzmessage {
 			}
 		} catch(e) {
 			return false;
+		}
+	}
+
+	async checkMessageStructure(message = {}) {
+		try {
+			if ((message.hasOwnProperty('hash') === true)
+			&& (message.hasOwnProperty('message') === true)
+			&& (message.hasOwnProperty('timestamp') === true)
+			&& ((await this.DB.validateName(message.hash)) === true)
+			&& (Number.isInteger(message.timestamp))
+			&& (message.hash === getHASH(message.message, 'md5'))) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch(e) {
+			return false;
+		}
+	}
+
+	async updateMessages(messages = {}, info = { host: '127.0.0.1', port: 28262 }, NODE) {
+		try {
+			let currentTime = new Date().getTime();
+			let node = await NODE.getInfo({
+				host: info.host,
+				port: info.port
+			});
+			let inequal = currentTime - (node.time + node.ping);
+			let message = {};
+			let keys = Object.keys(messages);
+			for (let i = 0, l = keys.length; i < l; i++) {
+				if ((this.messages[keys[i]] === undefined)
+				&& (messages[keys[i]]) > (currentTime - 900000)
+				&& ((messages[keys[i]] + inequal) < currentTime)) {
+					message = await NODE.getMessage(keys[i], { host: node.host, port: node.port });
+					if (this.checkMessageStructure(message)) {
+						await this.add({
+							hash: message.hash,
+							timestamp: message.timestamp,
+							message: message.message
+						});
+					}
+				}
+			}
+		} catch(e) {
+			console.log(e);
 		}
 	}
 
