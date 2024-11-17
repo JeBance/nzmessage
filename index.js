@@ -86,7 +86,7 @@ class nzmessage {
 			let keys = Object.keys(messages);
 			for (let i = 0, l = keys.length; i < l; i++) {
 				if ((this.messages[keys[i]] === undefined)
-				&& (messages[keys[i]]) > (currentTime - 900000)
+				&& (!this.hasExpired(this.messages[keys[i]]))
 				&& ((messages[keys[i]] + inequal) < currentTime)) {
 					message = await NODE.getMessage(keys[i], { host: node.host, port: node.port });
 					if (this.checkMessageStructure(message)) {
@@ -101,6 +101,18 @@ class nzmessage {
 		} catch(e) {
 			console.log(e);
 		}
+	}
+
+	hasExpired(timestamp) {
+		if (this.CONFIG.autoDel !== undefined
+		&& typeof this.CONFIG.autoDel === 'number'
+		&& this.CONFIG.autoDel > 0) {
+			let currentTime = new Date().getTime();
+			if (timestamp < (currentTime - this.CONFIG.autoDel*60*1000)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
