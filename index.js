@@ -21,7 +21,7 @@ class nzmessage {
 	async add(message = { hash: 'somehash', timestamp: '1731683656118', message: 'PGP message' } ) {
 		try {
 			this.messages[message.hash] = message.timestamp;
-			await this.DB.write('messages', message.hash, message.message);
+			await this.DB.write('messages', message.hash, JSON.stringify(message));
 			await this.DB.write(null, 'messages.json', JSON.stringify(this.messages));
 			console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash + ':', message.timestamp);
 		} catch(e) {
@@ -42,16 +42,9 @@ class nzmessage {
 
 	async getMessage(keyID) {
 		try {
-			if (keyID && this.messages[keyID]) {
-				let message = {
-					hash: keyID,
-					timestamp: this.messages[keyID],
-					message: await this.DB.read('messages', keyID)
-				};
-				return message;
-			} else {
-				return false;
-			}
+			if (!keyID || !this.messages[keyID]) throw new Error();
+			let message = JSON.parse(await this.DB.read('messages', keyID));
+			return message;
 		} catch(e) {
 			return false;
 		}
@@ -91,6 +84,8 @@ class nzmessage {
 					message = await NODE.getMessage(keys[i], { host: node.host, port: node.port });
 					if (this.checkMessageStructure(message)) {
 						await this.add({
+							host: node.host,
+							port: node.port,
 							hash: message.hash,
 							timestamp: message.timestamp,
 							message: message.message
