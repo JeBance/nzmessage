@@ -78,7 +78,7 @@ class nzmessage {
 			for (let i = 0, l = keys.length; i < l; i++) {
 				if ((this.list[keys[i]] === undefined)
 				&& (!this.hasExpired(this.list[keys[i]]))
-				&& ((list[keys[i]] + inequal) < currentTime)) {
+				&& ((this.list[keys[i]] + inequal) < currentTime)) {
 					message = await NODE.getMessage(keys[i], { host: node.host, port: node.port });
 					if (this.checkMessageStructure(message)) {
 						await this.add({
