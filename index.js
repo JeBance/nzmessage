@@ -1,4 +1,5 @@
-const { doRequest,
+const { getHASH,
+		doRequest,
 		getResponse } = require('nzfunc');
 
 class nzmessage {
@@ -53,7 +54,7 @@ class nzmessage {
 			&& (message.hasOwnProperty('message') === true)
 			&& (message.hasOwnProperty('timestamp') === true)
 			&& (Number.isInteger(message.timestamp))
-			&& (message.hash === getHASH(message.message, 'md5'))) {
+			&& (message.hash === await getHASH(message.message, 'md5'))) {
 				return true;
 			} else {
 				throw new Error('Incorrect message structure');
