@@ -3,27 +3,20 @@ const { doRequest,
 
 class nzmessage {
 	CONFIG;
-	DB;
+	list;
 	messages;
 
-	constructor(CONFIG, DB) {
+	constructor(CONFIG) {
 		this.CONFIG = CONFIG;
-		this.DB = DB;
-		const messages = JSON.parse(this.DB.read(null, 'messages.json'));
-		const type = Object.prototype.toString.call(messages);
-		if (type === '[object Object]' || type === '[object Array]') {
-			this.messages = messages;
-		} else {
-			this.messages = {};
-		}
+		this.list = {};
+		this.messages = {};
 	}
 
 	async add(message = { hash: 'somehash', timestamp: '1731683656118', message: 'PGP message' } ) {
 		try {
-			this.messages[message.hash] = message.timestamp;
-			await this.DB.write('messages', message.hash, JSON.stringify(message));
-			await this.DB.write(null, 'messages.json', JSON.stringify(this.messages));
-			console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash + ':', message.timestamp);
+			this.list[message.hash] = message.timestamp;
+			this.messages[message.hash] = message.message;
+			console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash);
 		} catch(e) {
 			console.log(e);
 		}
@@ -32,9 +25,8 @@ class nzmessage {
 	async remove(keyID) {
 		try {
 			console.log('\x1b[1m%s\x1b[0m', 'Message removed:', keyID);
-			await this.DB.delete('messages', keyID);
+			delete this.list[keyID];
 			delete this.messages[keyID];
-			await this.DB.write(null, 'messages.json', JSON.stringify(this.messages));
 		} catch(e) {
 			console.log(e);
 		}
@@ -42,10 +34,15 @@ class nzmessage {
 
 	async getMessage(keyID) {
 		try {
-			if (!keyID || !this.messages[keyID]) throw new Error();
-			let message = JSON.parse(await this.DB.read('messages', keyID));
+			if (!keyID || !this.list[keyID]) throw new Error('Unknown keyID');
+			let message = {
+				hash: keyID,
+				timestamp: this.list[keyID],
+				message: this.messages[keyID]
+			}
 			return message;
 		} catch(e) {
+			console.log(e);
 			return false;
 		}
 	}
@@ -55,14 +52,14 @@ class nzmessage {
 			if ((message.hasOwnProperty('hash') === true)
 			&& (message.hasOwnProperty('message') === true)
 			&& (message.hasOwnProperty('timestamp') === true)
-			&& ((await this.DB.validateName(message.hash)) === true)
 			&& (Number.isInteger(message.timestamp))
 			&& (message.hash === getHASH(message.message, 'md5'))) {
 				return true;
 			} else {
-				return false;
+				throw new Error('Incorrect message structure');
 			}
 		} catch(e) {
+			console.log(e);
 			return false;
 		}
 	}
@@ -78,14 +75,12 @@ class nzmessage {
 			let message = {};
 			let keys = Object.keys(messages);
 			for (let i = 0, l = keys.length; i < l; i++) {
-				if ((this.messages[keys[i]] === undefined)
-				&& (!this.hasExpired(this.messages[keys[i]]))
-				&& ((messages[keys[i]] + inequal) < currentTime)) {
+				if ((this.list[keys[i]] === undefined)
+				&& (!this.hasExpired(this.list[keys[i]]))
+				&& ((list[keys[i]] + inequal) < currentTime)) {
 					message = await NODE.getMessage(keys[i], { host: node.host, port: node.port });
 					if (this.checkMessageStructure(message)) {
 						await this.add({
-							host: node.host,
-							port: node.port,
 							hash: message.hash,
 							timestamp: message.timestamp,
 							message: message.message
