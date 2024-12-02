@@ -65,10 +65,11 @@ class nzmessage {
 		}
 	}
 
-	async updateMessages(messages = {}, info = { host: '127.0.0.1', port: 28262 }, NODE) {
+	async updateMessages(messages = {}, info = { prot: 'http', host: '127.0.0.1', port: 28262 }, NODE) {
 		try {
 			let currentTime = new Date().getTime();
 			let node = await NODE.getInfo({
+				prot: info.prot,
 				host: info.host,
 				port: info.port
 			});
@@ -79,8 +80,9 @@ class nzmessage {
 				if ((this.list[keys[i]] === undefined)
 				&& (!this.hasExpired(this.list[keys[i]]))
 				&& ((messages[keys[i]] + inequal) < currentTime)) {
-					message = await NODE.getMessage(keys[i], { host: node.host, port: node.port });
-					if (this.checkMessageStructure(message)) {
+					message = await NODE.getMessage(keys[i], { prot: node.prot, host: node.host, port: node.port });
+					if ((this.checkMessageStructure(message))
+					&& (this.list[keys[i]] === undefined)) {
 						await this.add({
 							hash: message.hash,
 							timestamp: message.timestamp,
@@ -105,6 +107,26 @@ class nzmessage {
 		}
 		return false;
 	}
+
+	getFirstMessageHash() {
+		let keys = Object.keys(this.list);
+		if (keys.length > 0) {
+			return keys[0];
+		} else {
+			return false;
+		}
+	}
+
+	getLastMessageHash() {
+		let keys = Object.keys(this.list);
+		if (keys.length > 0) {
+			let last = keys.length - 1;
+			return keys[last];
+		} else {
+			return false;
+		}
+	}
+
 
 }
 
