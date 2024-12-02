@@ -76,9 +76,9 @@ class nzmessage {
 			let inequal = currentTime - (node.time + node.ping);
 			let message = {};
 			let keys = Object.keys(messages);
-			for (let i = 0, l = keys.length; i < l; i++) {
+			if (keys.length > 0) for (let i = 0, l = keys.length; i < l; i++) {
 				if ((this.list[keys[i]] === undefined)
-				&& (!this.hasExpired(this.list[keys[i]]))
+				&& (!this.hasExpired(messages[keys[i]]))
 				&& ((messages[keys[i]] + inequal) < currentTime)) {
 					message = await NODE.getMessage(keys[i], { prot: node.prot, host: node.host, port: node.port });
 					if ((this.checkMessageStructure(message))
