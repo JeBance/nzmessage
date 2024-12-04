@@ -127,6 +127,22 @@ class nzmessage {
 		}
 	}
 
+	async autoDel() {
+		// auto delete message function
+		this.CONFIG.autoDel = Number(this.CONFIG.autoDel);
+		if (this.CONFIG.autoDel > 0) {
+			console.log('Automatic message deletion enabled (' + this.CONFIG.autoDel + ' min)');
+			let checkingMessages = setInterval(async () => {
+				let currentTime = new Date().getTime();
+				let keys = Object.keys(this.list);
+				for (let i = 0, l = keys.length; i < l; i++) {
+					if (this.hasExpired(this.list[keys[i]])) {
+						this.remove(keys[i]);
+					}
+				}
+			}, 1000);
+		}
+	}
 
 }
 
