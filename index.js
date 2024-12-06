@@ -31,7 +31,7 @@ class nzmessage {
 			} else {
 				this.messages[message.hash] = message.message;
 			}
-			console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash);
+			if (this.CONFIG.log) console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash);
 		} catch(e) {
 			if (this.CONFIG.log) console.log('Error:', e);
 		}
@@ -39,7 +39,7 @@ class nzmessage {
 
 	async remove(keyID) {
 		try {
-			console.log('\x1b[1m%s\x1b[0m', 'Message removed:', keyID);
+			if (this.CONFIG.log) console.log('\x1b[1m%s\x1b[0m', 'Message removed:', keyID);
 			delete this.list[keyID];
 			if (this.DB !== undefined) {
 				this.DB.delete('messages', keyID);
@@ -155,7 +155,7 @@ class nzmessage {
 		// auto delete message function
 		this.CONFIG.autoDel = Number(this.CONFIG.autoDel);
 		if (this.CONFIG.autoDel > 0) {
-			console.log('Automatic message deletion enabled (' + this.CONFIG.autoDel + ' min)');
+			if (this.CONFIG.log) console.log('Automatic message deletion enabled (' + this.CONFIG.autoDel + ' min)');
 			let checkingMessages = setInterval(async () => {
 				let currentTime = new Date().getTime();
 				let keys = Object.keys(this.list);
