@@ -1,3 +1,4 @@
+const nzfsdb = require('nzfsdb');
 const { getHASH,
 		doRequest,
 		getResponse } = require('nzfunc');
@@ -11,15 +12,28 @@ class nzmessage {
 		this.CONFIG = CONFIG;
 		this.list = {};
 		this.messages = {};
+		try {
+			if (this.CONFIG.db !== undefined) {
+				let DB = new nzfsdb(this.CONFIG.db);
+				if (DB.checkExists()) this.DB = DB;
+			}
+		} catch(e) {
+			if (this.CONFIG.log) console.log('Error:', e);
+		}
 	}
 
 	async add(message = { hash: 'somehash', timestamp: '1731683656118', message: 'PGP message' } ) {
 		try {
 			this.list[message.hash] = message.timestamp;
-			this.messages[message.hash] = message.message;
+			if (this.DB !== undefined) {
+				this.DB.write(null, 'messages.json', JSON.stringify(this.list));
+				this.DB.write('messages', message.hash, JSON.stringify(message.message));
+			} else {
+				this.messages[message.hash] = message.message;
+			}
 			console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash);
 		} catch(e) {
-			console.log(e);
+			if (this.CONFIG.log) console.log('Error:', e);
 		}
 	}
 
@@ -27,9 +41,14 @@ class nzmessage {
 		try {
 			console.log('\x1b[1m%s\x1b[0m', 'Message removed:', keyID);
 			delete this.list[keyID];
-			delete this.messages[keyID];
+			if (this.DB !== undefined) {
+				this.DB.delete('messages', keyID);
+				this.DB.write(null, 'messages', JSON.stringify(this.list));
+			} else {
+				delete this.messages[keyID];
+			}
 		} catch(e) {
-			console.log(e);
+			if (this.CONFIG.log) console.log('Error:', e);
 		}
 	}
 
@@ -38,12 +57,17 @@ class nzmessage {
 			if (!keyID || !this.list[keyID]) throw new Error('Unknown keyID');
 			let message = {
 				hash: keyID,
-				timestamp: this.list[keyID],
-				message: this.messages[keyID]
+				timestamp: this.list[keyID]
+			}
+			if (this.DB !== undefined) {
+				message.message = this.DB.read('messages', keyID);
+				if (!message.message) throw new Error('Message not exists - ', keyID);
+			} else {
+				message.message = this.messages[keyID];
 			}
 			return message;
 		} catch(e) {
-			console.log(e);
+			if (this.CONFIG.log) console.log('Error:', e);
 			return false;
 		}
 	}
@@ -60,7 +84,7 @@ class nzmessage {
 				throw new Error('Incorrect message structure');
 			}
 		} catch(e) {
-			console.log(e);
+			if (this.CONFIG.log) console.log('Error:', e);
 			return false;
 		}
 	}
@@ -92,7 +116,7 @@ class nzmessage {
 				}
 			}
 		} catch(e) {
-			console.log(e);
+			if (this.CONFIG.log) console.log('Error:', e);
 		}
 	}
 
