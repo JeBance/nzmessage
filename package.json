@@ -1,6 +1,6 @@
 {
   "name": "nzmessage",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "Class for nzserver",
   "keywords": [
     "class",
@@ -26,6 +26,7 @@
   },
   "homepage": "https://jebance.github.io/nzmessage/",
   "dependencies": {
-    "nzfsdb": "^2.0.0"
+    "nzfsdb": "^2.0.0",
+    "nzfunc": "^1.0.6"
   }
 }

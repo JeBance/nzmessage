@@ -1,7 +1,5 @@
 const nzfsdb = require('nzfsdb');
-const { getHASH,
-		doRequest,
-		getResponse } = require('nzfunc');
+const { getHASH, hasJsonStructure } = require('nzfunc');
 
 class nzmessage {
 	CONFIG;
@@ -15,7 +13,12 @@ class nzmessage {
 		try {
 			if (this.CONFIG.db !== undefined) {
 				let DB = new nzfsdb(this.CONFIG.db);
-				if (DB.checkExists()) this.DB = DB;
+				if (!DB.checkExists()) throw new Error('DB folder does not exist');
+				this.DB = DB;
+				if (!this.DB.checkExists(null, 'messages.json')) throw new Error('messages.json does not exist');
+				let messages = this.DB.read(null, 'messages.json');
+				if (hasJsonStructure(messages)) this.list = JSON.parse(messages);
+				if (this.CONFIG.log) console.log(this.list);
 			}
 		} catch(e) {
 			if (this.CONFIG.log) console.log('Error:', e);
