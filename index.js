@@ -21,7 +21,7 @@ class nzmessage {
 				if (this.CONFIG.log) console.log(this.list);
 			}
 		} catch(e) {
-			if (this.CONFIG.log) console.log('Error:', e);
+			if (this.CONFIG.log) console.log(e);
 		}
 	}
 
@@ -30,13 +30,13 @@ class nzmessage {
 			this.list[message.hash] = message.timestamp;
 			if (this.DB !== undefined) {
 				this.DB.write(null, 'messages.json', JSON.stringify(this.list));
-				this.DB.write('messages', message.hash, JSON.stringify(message.message));
+				this.DB.write('messages', message.hash, message.message);
 			} else {
 				this.messages[message.hash] = message.message;
 			}
 			if (this.CONFIG.log) console.log('\x1b[1m%s\x1b[0m', 'New message:', message.hash);
 		} catch(e) {
-			if (this.CONFIG.log) console.log('Error:', e);
+			if (this.CONFIG.log) console.log(e);
 		}
 	}
 
@@ -51,7 +51,7 @@ class nzmessage {
 				delete this.messages[keyID];
 			}
 		} catch(e) {
-			if (this.CONFIG.log) console.log('Error:', e);
+			if (this.CONFIG.log) console.log(e);
 		}
 	}
 
@@ -70,7 +70,7 @@ class nzmessage {
 			}
 			return message;
 		} catch(e) {
-			if (this.CONFIG.log) console.log('Error:', e);
+			if (this.CONFIG.log) console.log(e);
 			return false;
 		}
 	}
@@ -87,7 +87,7 @@ class nzmessage {
 				throw new Error('Incorrect message structure');
 			}
 		} catch(e) {
-			if (this.CONFIG.log) console.log('Error:', e);
+			if (this.CONFIG.log) console.log(e);
 			return false;
 		}
 	}
@@ -119,7 +119,7 @@ class nzmessage {
 				}
 			}
 		} catch(e) {
-			if (this.CONFIG.log) console.log('Error:', e);
+			if (this.CONFIG.log) console.log(e);
 		}
 	}
 
@@ -167,7 +167,7 @@ class nzmessage {
 						this.remove(keys[i]);
 					}
 				}
-			}, 1000);
+			}, this.CONFIG.autoCheckMessages);
 		}
 	}
 
