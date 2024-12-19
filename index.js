@@ -138,7 +138,8 @@ class nzmessage {
 	getFirstMessageHash() {
 		let keys = Object.keys(this.list);
 		if (keys.length > 0) {
-			return keys[0];
+			let result = { hash: keys[0], timestamp: this.list[keys[0]]};
+			return result;
 		} else {
 			return false;
 		}
@@ -148,7 +149,8 @@ class nzmessage {
 		let keys = Object.keys(this.list);
 		if (keys.length > 0) {
 			let last = keys.length - 1;
-			return keys[last];
+			let result = { hash: keys[last], timestamp: this.list[keys[last]]};
+			return result;
 		} else {
 			return false;
 		}
